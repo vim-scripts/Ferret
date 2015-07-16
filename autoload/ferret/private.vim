@@ -65,17 +65,18 @@ function! s:escape(arg) abort
 endfunction
 
 function! ferret#private#ack(command) abort
+  let g:ferret_lastsearch = s:escape(a:command)
   if empty(&grepprg)
     return
   endif
 
   " Prefer vim-dispatch unless otherwise instructed.
-  let l:dispatch = exists('g:FerretDispatch') ? g:FerretDispatch : 1
+  let l:dispatch = get(g:, 'FerretDispatch', 1)
   if l:dispatch && exists(':Make') == 2
     let l:original_makeprg=&l:makeprg
     let l:original_errorformat=&l:errorformat
     try
-      let &l:makeprg=&grepprg . ' ' . s:escape(a:command)
+      let &l:makeprg=&grepprg . ' ' . g:ferret_lastsearch
       let &l:errorformat=&grepformat
       Make
     finally
@@ -83,7 +84,7 @@ function! ferret#private#ack(command) abort
       let &l:errorformat=l:original_errorformat
     endtry
   else
-    cexpr system(&grepprg . ' ' . s:escape(a:command))
+    cexpr system(&grepprg . ' ' . g:ferret_lastsearch)
     cwindow
   endif
 endfunction
@@ -125,7 +126,11 @@ function! ferret#private#acks(command) abort
   endif
 
   execute 'args' l:filenames
+
+  silent doautocmd User FerretWillWrite
   execute 'argdo' '%s' . a:command . 'ge | update'
+  silent doautocmd User FerretDidWrite
+
 endfunction
 
 " Populate the :args list with the filenames currently in the quickfix window.
