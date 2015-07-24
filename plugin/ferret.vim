@@ -59,7 +59,7 @@ if s:map
       nmap <unique> <leader>r <Plug>(FerretAcks)
   endif
   nnoremap <Plug>(FerretAcks)
-        \ :Acks <c-r>=(exists('g:ferret_lastsearch') ? '/' . eval(g:ferret_lastsearch) . '//' : ' ')<CR><Left>
+        \ :Acks <c-r>=(exists('g:ferret_lastsearch') ? '/' . g:ferret_lastsearch . '//' : ' ')<CR><Left>
 endif
 
 " Populate the :args list with the filenames currently in the quickfix window.
@@ -68,10 +68,10 @@ command! -bar Qargs execute 'args' ferret#qargs()
 let s:commands=get(g:, 'FerretQFCommands', 1)
 if s:commands
   " Keep quickfix result centered, if possible, when jumping from result to result.
-  cabbrev <silent> <expr> cn ((getcmdtype() == ':' && getcmdpos() == 3) ? 'cn <bar> normal zz<cr>' : 'cn')
-  cabbrev <silent> <expr> cnf ((getcmdtype() == ':' && getcmdpos() == 4) ? 'cnf <bar> normal zz<cr>' : 'cnf')
-  cabbrev <silent> <expr> cp ((getcmdtype() == ':' && getcmdpos() == 3) ? 'cp <bar> normal zz<cr>' : 'cp')
-  cabbrev <silent> <expr> cpf ((getcmdtype() == ':' && getcmdpos() == 4) ? 'cpf <bar> normal zz<cr>' : 'cpf')
+  cabbrev <silent> <expr> cn ((getcmdtype() == ':' && getcmdpos() == 3) ? 'cn <bar> normal zz' : 'cn')
+  cabbrev <silent> <expr> cnf ((getcmdtype() == ':' && getcmdpos() == 4) ? 'cnf <bar> normal zz' : 'cnf')
+  cabbrev <silent> <expr> cp ((getcmdtype() == ':' && getcmdpos() == 3) ? 'cp <bar> normal zz' : 'cp')
+  cabbrev <silent> <expr> cpf ((getcmdtype() == ':' && getcmdpos() == 4) ? 'cpf <bar> normal zz' : 'cpf')
 endif
 
 " Restore 'cpoptions' to its former value.
