@@ -234,6 +234,25 @@ OPTIONS                                                        *ferret-options*
 
     let g:FerretQFOptions=0
 <
+                                                            *g:FerretQFHandler*
+  |g:FerretQFHandler|                      string (default: "botright cwindow")
+
+  Defines the command to open the |quickfix| window to display the results of
+  a synchronous |:Ack| operation.
+
+  This can be useful if you want to define how many lines the |quickfix| window
+  should have, or where it should appear. For example: >
+
+    let g:FerretQFHandler='botright cwindow 30'
+<
+  Note that this does not apply when using vim-dispatch, because it manages
+  the display of the window itself.
+
+                                                            *g:FerretLLHandler*
+  |g:FerretLLHandler|                               string (default: "lwindow")
+
+  Just like |g:FerretQFHandler|, but applied to |location-list|.
+
                                                                *g:FerretLoaded*
   |g:FerretLoaded|                                             any (no default)
 
@@ -241,7 +260,7 @@ OPTIONS                                                        *ferret-options*
   |.vimrc|. For example: >
 
     let g:FerretLoaded=1
-
+<
 
 MAPPINGS                                                      *ferret-mappings*
 
@@ -514,12 +533,25 @@ plug-in (https://github.com/mileszs/ack.vim).
 Other contributors that have submitted patches include (in alphabetical
 order):
 
+  Daniel Silva
   Joe Lencioni
   Nelo-Thara Wallus
   Vaibhav Sagar
 
 
 HISTORY                                                        *ferret-history*
+
+1.0 (28 December 2015)
+
+- Fix broken |:Qargs| command (patch from Daniel Silva).
+- Add |g:FerretQFHandler| and |g:FerretLLHandler| options (patch from Daniel
+  Silva).
+- Make |<Plug>| mappings accessible even |g:FerretMap| is set to 0.
+- Fix failure to report filename when using `ack` and explicitly scoping
+  search to a single file (patch from Daniel Silva).
+- When using `ag`, report multiple matches per line instead of just the first
+  (patch from Daniel Silva).
+- Improve content and display of error messages.
 
 0.3 (24 July 2015)
 

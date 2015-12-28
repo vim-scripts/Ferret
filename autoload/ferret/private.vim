@@ -194,7 +194,7 @@ function! ferret#private#ack(command) abort
     endtry
   else
     cexpr system(&grepprg . ' ' . l:command)
-    cwindow
+    execute get(g:, 'FerretQFHandler', 'botright cwindow')
     call ferret#private#post('qf')
   endif
 endfunction
@@ -208,13 +208,13 @@ function! ferret#private#lack(command) abort
   endif
 
   lexpr system(&grepprg . ' ' . l:command)
-  lwindow
+  execute get(g:, 'FerretLLHandler', 'lwindow')
   call ferret#private#post('location')
 endfunction
 
 function! ferret#private#hlsearch() abort
   if has('extra_search')
-    let l:hlsearch=exists('g:FerretHlsearch') ? g:FerretHlsearch : &hlsearch
+    let l:hlsearch=get(g:, 'FerretHlsearch', &hlsearch)
     if l:hlsearch
       let @/=g:ferret_lastsearch
       call feedkeys(":let &hlsearch=1 | echo \<CR>", 'n')
@@ -239,22 +239,49 @@ endfunction
 " (Note: there's nothing specific to Ack in this function; it's just named this
 " way for mnemonics, as it will most often be preceded by an :Ack invocation.)
 function! ferret#private#acks(command) abort
-  if match(a:command, '\v^/.+/.*/$') == -1 " crude sanity check
-    echoerr 'Ferret: Expected a substitution expression (/foo/bar/); got: ' . a:command
+  " Accept any pattern allowed by E146 (crude sanity check).
+  let l:matches = matchlist(a:command, '\v\C^(([^|"\\a-zA-Z0-9]).+\2.*\2)([cgeiI]*)$')
+  if !len(l:matches)
+    call s:error(
+          \ 'Ferret: Expected a substitution expression (/foo/bar/); got: ' .
+          \ a:command
+          \ )
     return
+  endif
+
+  " Pass through options `c`, `i`/`I` to `:substitute`.
+  " Add options `e` and `g` if not already present.
+  let l:pattern = l:matches[1]
+  let l:options = l:matches[3]
+  if l:options !~# 'e'
+    let l:options .= 'e'
+  endif
+  if l:options !~# 'g'
+    let l:options .= 'g'
   endif
 
   let l:filenames=ferret#private#qargs()
   if l:filenames ==# ''
-    echoerr 'Ferret: Quickfix filenames must be present, but there are none'
+    call s:error(
+          \ 'Ferret: Quickfix filenames must be present, but there are none ' .
+          \ '(must use :Ack to find files before :Acks can be used)'
+          \ )
     return
   endif
 
   execute 'args' l:filenames
 
-  silent doautocmd User FerretWillWrite
-  execute 'argdo' '%s' . a:command . 'ge | update'
-  silent doautocmd User FerretDidWrite
+  if v:version > 703 || v:version == 703 && has('patch438')
+    silent doautocmd <nomodeline> User FerretWillWrite
+  else
+    silent doautocmd User FerretWillWrite
+  endif
+  execute 'argdo' '%s' . l:pattern . l:options . ' | update'
+  if v:version > 703 || v:version == 703 && has('patch438')
+    silent doautocmd <nomodeline> User FerretDidWrite
+  else
+    silent doautocmd User FerretDidWrite
+  endif
 
 endfunction
 
